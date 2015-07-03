@@ -10,13 +10,13 @@ Created on 22 mai 2015
 # Optional:
 # -v <clinvarMain.bed>, clinvar bed file (with all columns) containing more information on the variants. The output will contain more details on each SNV.
 # -h <homer_annotation.txt>, homer annotation  of the peak file containing the motif. The output will contain annotation details of the peak containing the variant.
-# -d <disease_name.txt>
+# -d <disease_name.txt>, clinvar disease file (ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/disease_names)
 
 import sys
 import getopt
 
 
-progHelp = "Writes a table summarizing single-nucleotide variants (SNVs) found in a motif.\n Arguments:\n-i <intersect_motif_peaks.bed>, output file from intersectBed with '-a': clinvar Bed file, '-b': the motif locations (from getMotifLocations.py) and '-wo'.\n Optional:\n-v <clinvarMain.bed>, clinvar bed file (with all columns) containing more information on the variants. The output will contain more details on each SNV.\n-h <homer_annotation.txt>, homer annotation  of the peak file containing the motif. The output will contain annotation details of the peak containing the variant."
+progHelp = "Writes a table summarizing single-nucleotide variants (SNVs) found in a motif.\n Arguments:\n-i <intersect_motif_peaks.bed>, output file from intersectBed with '-a': clinvar Bed file, '-b': the motif locations (from getMotifLocations.py) and '-wo'.\n Optional:\n-v <clinvarMain.bed>, clinvar bed file (with all columns) containing more information on the variants. The output will contain more details on each SNV.\n-h <homer_annotation.txt>, homer annotation  of the peak file containing the motif. The output will contain annotation details of the peak containing the variant.\n-d <disease_name.txt>, clinvar disease file (ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/disease_names)"
 
 def get_params(argv):
     try:
