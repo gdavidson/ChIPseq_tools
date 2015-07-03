@@ -13,6 +13,16 @@ Optional:
  -f <field number(integer)>, only with '-b', field (column) which contains IDs for file2.bed (default:4)
 ```
 
+## editGTFlocations.py
+
+>Changes first field of a GTF file to match NCBI standards (chr1, chr2 ...).
+>Arguments:
+> -i <file.gtf>, the GTF file to edit.
+> -a <assembly>, name of the assembly (hg19 or mm9).
+>Optional:
+> -p <mm9_patches.tsv>, the file containing patches and loci for your assembly (alt_scaffold_placement.txt in genebank genome DB).
+
+
 
 
 
