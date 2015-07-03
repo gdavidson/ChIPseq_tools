@@ -4,7 +4,7 @@ Created on 15 mai 2015
 @author: gdavidson
 '''
 
-# Changes first field of a GTF file to match NCBI standards (chr1, chr2 ...).
+# Changes first field of a GTF file to match UCSC standards (chr1, chr2 ...).
 # Arguments:
 # -i <file.gtf>, the GTF file to edit.
 # -a <assembly>, name of the assembly (hg19 or mm9).
@@ -14,7 +14,7 @@ Created on 15 mai 2015
 import sys
 import getopt
 
-progHelp = "Changes first field of a GTF file to match NCBI standards (chr1, chr2 ...).\nArguments:\n-i <file.gtf>, the GTF file to edit.\n-a <assembly>, name of the assembly (hg19 or mm9).\nOptional:\n-p <mm9_patches.tsv>, the file containing patches and loci for your assembly (alt_scaffold_placement.txt in genebank genome DB)."
+progHelp = "Changes first field of a GTF file to match UCSC standards (chr1, chr2 ...).\nArguments:\n-i <file.gtf>, the GTF file to edit.\n-a <assembly>, name of the assembly (hg19 or mm9).\nOptional:\n-p <mm9_patches.tsv>, the file containing patches and loci for your assembly (alt_scaffold_placement.txt in genebank genome DB)."
 
 def get_params(argv):
     try:
