@@ -16,6 +16,7 @@ Created on 11 mai 2015
 import sys
 import getopt
 import pylab as P
+from matplotlib_venn import venn2
 
 progHelp = "Compares a gene list to a homer annotatePeaks.py output and finds common genes.\nArguments:\n-i <genes.txt>, gene list with two tab separated fields per line (ENSEMBL Gene ID, gene common name).\n-h <homerOut.tsv>, annotated file from homer with ensembl transcriptID as reference.\n-e <biomartOut.tsv>, biomart output for your ensembl release and organism (two columns: geneID, transcriptID). If -g, first column has to be geneID then other fields are optional.\n Optional:\n-b true, if your '-i' file is also a homer annotation file.\n-g true, if your '-h' file is also a list with gene IDs in the first column."
 
@@ -190,7 +191,6 @@ def compareLists(list1, list2):
     print str(len(uniqueGenesL2))+" genes unique to the second list"
     return commonGenes, uniqueGenesL1, uniqueGenesL2        
 
-
 def writeLines(inList, outName, lineMap):
     oFile = open(outName, "w")
     print "Writing '"+outName+"': "+str(len(inList))+" lines."
@@ -204,7 +204,12 @@ def writeLines(inList, outName, lineMap):
     oFile.flush()
     oFile.close()
     
-                   
+def drawVennDiagram(list1, list2):
+    print "Displaying Venn Diagram ..."
+    venn2([set(list1), set(list2)], ('list1', 'list2'))
+    P.show()
+
+                              
 if __name__ == '__main__':
     infilename, homerFile, ensemblFile, bothHomer, bothLists = get_params(sys.argv[1:])
     if infilename == "none" or homerFile == "none" or ensemblFile == "none":
@@ -230,6 +235,7 @@ if __name__ == '__main__':
         commonGenes, uniqueL1, uniqueL2 = compareLists(list1, list2)
         writeLines(commonGenes, "common_genes.txt",ensemblMap)
         writeLines(uniqueL1, infilename.split(".")[0]+"_unique.txt", ensemblMap)
-        writeLines(uniqueL2, homerFile.split(".")[0]+"_unique.txt", ensemblMap)   
-    print "Finished."  
-    
+        writeLines(uniqueL2, homerFile.split(".")[0]+"_unique.txt", ensemblMap)
+        drawVennDiagram(list1, list2)
+    print "Finished." 
+     
