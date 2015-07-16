@@ -58,9 +58,10 @@ Optional:
  Arguments:
 -i <genes.txt>, gene list with two tab separated fields per line (ENSEMBL Gene ID, gene common name).
 -h <homerOut.tsv>, annotated file from homer with ensembl transcriptID as reference.
--e <biomartOut.tsv>, biomart output for your ensembl release and organism (two columns: geneID, transcriptID).
+-e <biomartOut.tsv>, biomart output for your ensembl release and organism (two columns: geneID, transcriptID). If -g, first column has to be geneID then other fields are optional. 
  Optional:
--b true, if your '-i' file is an homer annotation file. 
+-b true, if your '-i' file is also a homer annotation file.
+-g true, if your '-h' file is also a list with gene IDs in the first column.  
 ```
 
 ## clinvarToBed_iterative.py

@@ -8,25 +8,27 @@ Created on 11 mai 2015
 # Arguments:
 #-i <genes.txt>, gene list with two tab separated fields per line (ENSEMBL Gene ID, gene common name).
 #-h <homerOut.tsv>, annotated file from homer with ensembl transcriptID as reference.
-#-e <biomartOut.tsv>, biomart output for your ensembl release and organism (two columns: geneID, transcriptID).
+#-e <biomartOut.tsv>, biomart output for your ensembl release and organism (two columns: geneID, transcriptID). If -g, first column has to be geneID then other fields are optional. 
 # Optional:
-#-b true, if your '-i' file is an homer annotation file. 
+#-b true, if your '-i' file is also a homer annotation file.
+#-g true, if your '-h' file is also a list with gene IDs in the first column.  
 
 import sys
 import getopt
 import pylab as P
 
-progHelp = "Compares a gene list to a homer annotatePeaks.py output and finds common genes.\nArguments:\n-i <genes.txt>, gene list with two tab separated fields per line (ENSEMBL Gene ID, gene common name).\n-h <homerOut.tsv>, annotated file from homer with ensembl transcriptID as reference.\n-e <biomartOut.tsv>, biomart output for your ensembl release and organism (two columns: geneID, transcriptID).\n Optional:\n-b true, if your '-i' file is an homer annotation file."
+progHelp = "Compares a gene list to a homer annotatePeaks.py output and finds common genes.\nArguments:\n-i <genes.txt>, gene list with two tab separated fields per line (ENSEMBL Gene ID, gene common name).\n-h <homerOut.tsv>, annotated file from homer with ensembl transcriptID as reference.\n-e <biomartOut.tsv>, biomart output for your ensembl release and organism (two columns: geneID, transcriptID). If -g, first column has to be geneID then other fields are optional.\n Optional:\n-b true, if your '-i' file is also a homer annotation file.\n-g true, if your '-h' file is also a list with gene IDs in the first column."
 
 def get_params(argv):
     try:
-        opts, args = getopt.getopt(argv, "i:h:e:b:", ["infilename", "homerFile", "ensemblFile", "bothHomer"])
+        opts, args = getopt.getopt(argv, "i:h:e:b:g:", ["infilename", "homerFile", "ensemblFile", "bothHomer"])
     except getopt.GetoptError:
         sys.exit("Invalid argument:\n"+progHelp)
     infilename = "none"
     homerFile = "none"
     ensemblFile = "none"
     bothHomer = False
+    bothLists = False
     for opt,arg in opts:
         if opt =='-i':
             infilename = arg
@@ -36,7 +38,10 @@ def get_params(argv):
             ensemblFile = arg
         if opt == '-b':
             bothHomer = True
-    return infilename, homerFile, ensemblFile, bothHomer
+        if opt == '-g':
+            bothLists = True
+        
+    return infilename, homerFile, ensemblFile, bothHomer, bothLists
 
 def getHomerDictionary(homerFile, ensemblTransToGeneMap):
     homerDic = {}
@@ -141,12 +146,70 @@ def getGeneMap(infilename, ensemblTransToGeneMap):
     hFile.close()
     print "Reading homer output '"+str(infilename)+"': "+str(len(geneMap))+" genes."
     return geneMap
+
+def getEnsemblMap(ensemblFile):
+    eFile = open(ensemblFile,"r")
+    geneMap = {}
+    for line in eFile:
+        geneID = str(line).split("\t")[0].upper().strip()
+        geneMap[geneID] = line
+    eFile.flush()
+    eFile.close()
+    print "Reading biomart output '"+str(ensemblFile)+"': "+str(len(geneMap))+" genes."
+    return geneMap
+
+def getIDList(fileName):
+    iFile = open(fileName, "r")
+    idList = []
+    for line in iFile:
+        geneID = str(line).split("\t")[0].upper().strip()
+        idList.append(geneID)
+    iFile.flush()
+    iFile.close()
+    print "Reading gene list '"+str(fileName)+"': "+str(len(idList))+" IDs."
+    return idList
+
+def compareLists(list1, list2):
+    commonGenes = []
+    uniqueGenesL1 = []
+    uniqueGenesL2 = []
+    for geneID in list1:
+        if geneID in list2:
+            commonGenes.append(geneID)
+        else:
+            uniqueGenesL1.append(geneID)
+            
+    for geneID in list2:
+        if geneID in list1:
+            continue
+        else:
+            uniqueGenesL2.append(geneID)
+    print "Comparing lists ..."
+    print str(len(commonGenes))+" genes in common."
+    print str(len(uniqueGenesL1))+" genes unique to the first list"
+    print str(len(uniqueGenesL2))+" genes unique to the second list"
+    return commonGenes, uniqueGenesL1, uniqueGenesL2        
+
+
+def writeLines(inList, outName, lineMap):
+    oFile = open(outName, "w")
+    print "Writing '"+outName+"': "+str(len(inList))+" lines."
+    for geneID in inList:
+        if geneID in lineMap:
+            line = str(lineMap[geneID]).strip()
+        else:
+            line = str(geneID).strip()
+            print str(geneID)+" not in biomart file."
+        oFile.write(line+"\n")
+    oFile.flush()
+    oFile.close()
     
+                   
 if __name__ == '__main__':
-    infilename, homerFile, ensemblFile, bothHomer = get_params(sys.argv[1:])
-    if infilename == "none" or homerFile == "none":
+    infilename, homerFile, ensemblFile, bothHomer, bothLists = get_params(sys.argv[1:])
+    if infilename == "none" or homerFile == "none" or ensemblFile == "none":
         sys.exit(progHelp)
-    if bothHomer == False:   
+    if bothHomer == False and bothLists == False:   
         ensemblMap = getEnsemblTransToGeneMap(ensemblFile)
         homerDic,distanceMap = getHomerDictionary(homerFile, ensemblMap)
         refList, geneIDToNameMap = getGeneList(infilename)
@@ -154,11 +217,19 @@ if __name__ == '__main__':
         writeList(commonGenesList, "common_genes.txt", geneIDToNameMap)
         writeList(peakList,"common_genes_reference_sequences.txt")
         histDistances(commonGenesList, distanceMap)
-    else:
+    elif bothHomer == True and bothLists == False:
         ensemblMap = getEnsemblTransToGeneMap(ensemblFile)
         geneMap = getGeneMap(infilename, ensemblMap)
         refGeneMap = getGeneMap(homerFile, ensemblMap)
         commonGenes = compareGeneMaps(geneMap, refGeneMap)
-        writeList(commonGenes, "common_genes.xls")       
+        writeList(commonGenes, "common_genes.xls")
+    elif bothHomer == False and bothLists == True:
+        ensemblMap = getEnsemblMap(ensemblFile)
+        list1 = getIDList(infilename)
+        list2 = getIDList(homerFile)
+        commonGenes, uniqueL1, uniqueL2 = compareLists(list1, list2)
+        writeLines(commonGenes, "common_genes.txt",ensemblMap)
+        writeLines(uniqueL1, infilename.split(".")[0]+"_unique.txt", ensemblMap)
+        writeLines(uniqueL2, homerFile.split(".")[0]+"_unique.txt", ensemblMap)   
     print "Finished."  
     
