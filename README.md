@@ -8,7 +8,7 @@ Arguments:
  -i <file1.bed>, input file in bed format
 Options (choose one):
  -o <offset(integer)>, changes the coordinates of each entry of the input file by the offset amount (start-offset, end+offset)
- -b <file2.bed>, finds all entries in file2 which ID/name matches any ID/name in file1 (4th column) .
+ -b <file2.bed>, finds all entries in file2 which ID/name matches any ID/name in file1 (4th column). Can be a simple list of IDs (one ID per line) then set '-f' to 1.
 Optional:
  -f <field number(integer)>, only with '-b', field (column) which contains IDs for file2.bed (default:4)
 ```

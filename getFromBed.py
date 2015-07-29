@@ -9,16 +9,15 @@ Created on 7 mai 2015
 #-i <file1.bed>, input file in bed format
 # Options (choose one):
 #-o <offset(integer)>, changes the coordinates of each entry of the input file by the offset amount (start-offset, end+offset)
-#-b <file2.bed>, finds all entries in file2 which ID/name matches any ID/name in file1 (4th column) .
+#-b <file2.bed>, finds all entries in file2 which ID/name matches any ID/name in file1 (4th column). Can be a simple list of IDs (one ID per line) then set '-f' to 1.
 # Optional:
 #-f <field number(integer)>, only with '-b', field (column) which contains IDs for file2.bed (default:4)
-
 
 
 import sys
 import getopt
 
-progHelp = "Allows operations on BED Files.\nArguments:\n-i <file1.bed>, input file in bed format\nOptions (choose one):\n-o <offset(integer)>, changes the coordinates of each entry of the input file by the offset amount (start-offset, end+offset)\n-b <file2.bed>, finds all entries in file2 which ID/name matches any ID/name in file1(4th column).\nOptional:\n-f <field number(integer)>, only with '-b', field (column) which contains IDs for file2.bed (default:4)"
+progHelp = "Allows operations on BED Files.\nArguments:\n-i <file1.bed>, input file in bed format\nOptions (choose one):\n-o <offset(integer)>, changes the coordinates of each entry of the input file by the offset amount (start-offset, end+offset)\n-b <file2.bed>, finds all entries in file2 which ID/name matches any ID/name in file1(4th column). Can be a simple list of IDs (one ID per line) then set '-f' to 1.\nOptional:\n-f <field number(integer)>, only with '-b', field (column) which contains IDs for file2.bed (default:4)"
 
 def get_params(argv):
     try:
@@ -84,7 +83,7 @@ def getIDMap(bedList):
     idMap = {}
     for line in bedList:
         bID = str(line).split("\t")[3].strip().upper()
-        idMap[bID] = 1
+        idMap[bID] = line
     return idMap
 
 def getLinesWithIDs(bedList, idMap, idField = 4):
@@ -92,7 +91,7 @@ def getLinesWithIDs(bedList, idMap, idField = 4):
     for line in bedList:
         sbID = str(line).split("\t")[(idField-1)].strip().upper()
         if sbID in idMap:
-            foundLines.append(str(line).strip())
+            foundLines.append(str(idMap[sbID]).strip())
     return foundLines
     
 if __name__ == '__main__':
