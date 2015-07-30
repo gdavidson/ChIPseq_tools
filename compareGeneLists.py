@@ -49,11 +49,18 @@ def getHomerDictionary(homerFile, ensemblTransToGeneMap):
     distanceMap = {}
     hFile = open(homerFile, "r")
     for line in hFile:
+        if str(line).isspace() or line.startswith("#"):
+            continue
         transID = str(line).split("\t")[10].upper().strip()
         if transID in ensemblTransToGeneMap:
             geneID = ensemblTransToGeneMap[transID]
             peakID = str(line).split("\t")[0]
-            homerDic[geneID] = peakID
+            if geneID in homerDic:
+                peakIDs = homerDic[geneID]
+                peakIDs.append(peakID)
+                homerDic[geneID] = peakIDs
+            else:
+                homerDic[geneID] = [peakID]
             distanceToTSS = str(line).split("\t")[9]
             distanceMap[geneID] = distanceToTSS
     hFile.flush()
@@ -67,23 +74,26 @@ def getCommonGenesList(refList, geneDic):
     for gene in refList:
         if gene in geneDic:
             commonGenes.append(gene)
-            refID = geneDic[gene]
-            refIDList.append(refID)
+            refIDs = geneDic[gene]
+            for refID in refIDs:
+                refIDList.append(refID)
     print "Comparing gene lists: "+str(len(commonGenes))+" genes in common."
     return commonGenes, refIDList
-    
+
 def getGeneList(infilename):
     iFile = open(infilename, "r")
     geneList = []
     geneIDToNameMap = {}
     for line in iFile:
+        if str(line).isspace() or line.startswith("#"):
+            continue   
         geneID = str(line).split("\t")[0].upper().strip()
         geneList.append(geneID)
         geneName = str(line).split("\t")[1].upper().strip()
         geneIDToNameMap[geneID] = geneName
     iFile.flush()
     iFile.close()
-    print "Reading geneID file '"+str(infilename)+"': "+str(len(geneList))+" genes."
+    print "Reading gene list '"+str(infilename)+"': "+str(len(geneList))+" genes."
     return geneList, geneIDToNameMap
 
 def writeList(inList, outName, nameMap = "none"):
@@ -208,7 +218,6 @@ def drawVennDiagram(list1, list2):
     print "Displaying Venn Diagram ..."
     venn2([set(list1), set(list2)], ('list1', 'list2'))
     P.show()
-
                               
 if __name__ == '__main__':
     infilename, homerFile, ensemblFile, bothHomer, bothLists = get_params(sys.argv[1:])
@@ -237,5 +246,4 @@ if __name__ == '__main__':
         writeLines(uniqueL1, infilename.split(".")[0]+"_unique.txt", ensemblMap)
         writeLines(uniqueL2, homerFile.split(".")[0]+"_unique.txt", ensemblMap)
         drawVennDiagram(list1, list2)
-    print "Finished." 
-     
+    print "Finished."      
