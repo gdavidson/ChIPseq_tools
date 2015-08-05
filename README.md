@@ -17,6 +17,8 @@ Optional:
 
 ```
  Allows different operations on fasta files.
+ Requires:
+ -biopython: http://biopython.org
  Arguments:
  -i <file.fasta>, sequence(s) file in fasta format
  Options (choose one):
@@ -25,6 +27,14 @@ Optional:
  -f <ids.txt>, file containing a list of sequences IDs (1 per line) to retrieve from '-i' file.
  Optional:
  -p <separator>, only if '-f', parses the IDs of both files (ex: sequenceID(file.fasta): MITF_peak_201, ID(ids.txt): CT_HG19_MITF_peak_201, then use either 'MITF' or 'peak' as separator).
+
+Examples:
+Retrieves sequences from a list of IDs:
+python getFromFasta.py -i chip_mitf_peaks.fasta -f peak_ids.txt 
+Generates new IDs for each sequences:
+python getFromFasta.py -i unnamed_sequences.fasta -u true
+Looks for TATATA or TATATATA in the input sequences:
+python getFromFasta.py -i chip_mitf_peaks.fasta -r 'TA{3,4}'
 ```
 
 ## getFromAnnotations.py

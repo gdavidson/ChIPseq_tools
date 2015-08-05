@@ -6,6 +6,8 @@ Created on 4 mai 2015
 @author: gdavidson
 '''
 # Allows different operations on fasta files.
+# Requires:
+# -biopython: http://biopython.org
 # Arguments:
 # -i <file.fasta>, sequence(s) file in fasta format
 # Options (choose one):
@@ -14,6 +16,14 @@ Created on 4 mai 2015
 # -f <ids.txt>, file containing a list of sequences IDs (1 per line) to retrieve from '-i' file.
 # Optional:
 # -p <separator>, only if '-f', parses the IDs of both files (ex: sequenceID(file.fasta): MITF_peak_201, ID(ids.txt): CT_HG19_MITF_peak_201, then use either 'MITF' or 'peak' as separator).
+#
+#Examples:
+#Retrieves sequences from a list of IDs:
+#python getFromFasta.py -i chip_mitf_peaks.fasta -f peak_ids.txt 
+#Generates new IDs for each sequences:
+#python getFromFasta.py -i unnamed_sequences.fasta -u true
+#Looks for TATATA or TATATATA in the input sequences:
+#python getFromFasta.py -i chip_mitf_peaks.fasta -r 'TA{3,4}'
 
 import sys
 import getopt
@@ -22,7 +32,7 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 import re
 
-progHelp = "Allows different operations on fasta files.\nArguments:\n -i <file>, sequence(s) file in fasta format\nOptions (choose one):\n -r <regexp>,  looks for the input regular expression within input sequences.\n -u true, generates a new multi fasta file with new uniques IDs for each sequence.\n -f <ids.txt>, file containing a list of sequences IDs (1 per line) to retrieve from '-i' file.\nOptional:\n -p <separator>, only if '-f', parses the IDs of both files (ex: sequenceID(file.fasta): MITF_peak_201, ID(ids.txt): CT_HG19_MITF_peak_201, then use either 'MITF' or 'peak' as separator)."
+progHelp = "Allows different operations on fasta files.\nArguments:\n -i <file>, sequence(s) file in fasta format\nOptions (choose one):\n -r <regexp>,  looks for the input regular expression within input sequences.\n -u true, generates a new multi fasta file with new uniques IDs for each sequence.\n -f <ids.txt>, file containing a list of sequences IDs (1 per line) to retrieve from '-i' file.\nOptional:\n -p <separator>, only if '-f', parses the IDs of both files (ex: sequenceID(file.fasta): MITF_peak_201, ID(ids.txt): CT_HG19_MITF_peak_201, then use either 'MITF' or 'peak' as separator).\n\nExamples:\nRetrieves sequences from a list of IDs:\npython getFromFasta.py -i chip_mitf_peaks.fasta -f peak_ids.txt\nGenerates new IDs for each sequences:\npython getFromFasta.py -i unnamed_sequences.fasta -u true\nLooks for TATATA or TATATATA in the input sequences:\npython getFromFasta.py -i chip_mitf_peaks.fasta -r 'TA{3,4}'"
 
 def get_params(argv):
     try:
@@ -48,32 +58,30 @@ def get_params(argv):
             queryType = "getSequences"
         if opt == "-p":
             parseIDs = True
-            expName = arg             
+            expName = arg      
     return infilename, pattern, queryType, idFile, parseIDs, expName
 
 def getRecordDic(infileName):
     recordDic = Bio.SeqIO.index(infileName, "fasta")
-    print "Input file: "+str(len(recordDic))+" sequence(s)"
+    print "Reading Input file '"+infileName+"': "+str(len(recordDic))+" sequence(s)."
     return recordDic
 
 def searchRegexp(pattern, recordDic):
-    #prog = re.compile(pattern)
-    matchCount = 0
+    prog = re.compile(pattern)
+    idList = []
     for key in recordDic.keys():
         record = recordDic[key]
         seq = str(record.seq)
-        
-        #result = prog.search(seq)
-        #if result:
-        #    result.group(0)
-        
-        if seq.find(pattern) == -1:
-            continue
-        else:
-            #print record.id
-            matchCount= matchCount+1
-    print str(matchCount)+" sequences with match(es)"
-            
+        rID = record.id
+        result = prog.findall(seq)
+        if len(result) > 0:
+            print "Found "+str(len(result))+" matches in '"+str(rID)+"':"
+            for match in result:
+                print match
+            idList.append(rID)
+    print "Found "+str(len(idList))+" sequences with match(es)."
+    return idList        
+                    
 def getUniqueRecords(recordList):
     newRecordList = []
     idCount = 0
@@ -129,14 +137,23 @@ def getRecordListFromIDs(recordList, idList, parseIDs = False, expName = "peak")
                 records.append(record)
     print "Found "+str(len(records))+" sequences matching IDs."
     return records
-                   
+
+def writeList(inList, outName):
+    outFile = open(outName, "w")
+    for elem in inList:
+        outFile.write(str(elem)+"\n")
+    print "Writing file '"+str(outName)+"': "+str(len(inList))+" lines."
+    outFile.flush()
+    outFile.close()
+                       
 if __name__ == '__main__':
     infileName, pattern, queryType, idFile, parseIDs, expName = get_params(sys.argv[1:])
     if infileName == "none" or queryType == "none":
         sys.exit(progHelp)  
     if queryType == "regexp":
         recordDic = getRecordDic(infileName)
-        searchRegexp(pattern, recordDic)
+        idList = searchRegexp(pattern, recordDic)
+        writeList(idList, "sequences_with_pattern.txt")
     if queryType == "uniqueIDs":
         oldRecordList = getRecordList(infileName)
         recordList = getUniqueRecords(oldRecordList)
@@ -146,6 +163,4 @@ if __name__ == '__main__':
         idList = getIDList(idFile)
         records = getRecordListFromIDs(recordList, idList, parseIDs, expName)
         writeRecords(records, "retrieved_sequences.fasta")      
-    print "Finished."
-        
-        
+    print "Finished."     
