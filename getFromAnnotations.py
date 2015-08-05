@@ -3,7 +3,10 @@ Created on 5 juin 2015
 
 @author: gdavidson
 '''
+
 # Allows operations on homer 'annotatePeaks.pl' output file.
+# Requires:
+# -pylab module from package matplotlib (http://matplotlib.org/)
 # Arguments:
 # -i <homer_annotation.txt>, homer output file.
 # Options:
@@ -11,12 +14,20 @@ Created on 5 juin 2015
 # -p <piechart title>, makes a chart summarizing annotations (number of peaks annotated as 'promoter-TSS', 'exon, 'intron' ect...).
 # -r <keyword>, retrieves lines annotated as the keyword (<promoter-tss>, <exon>, <intron>, <TTS>, <intergenic>, <non-coding>, <3'UTR>, <5'UTR>)
 # -b <biomart_export.txt>, completes annotation with a biomart output file containing the following fields (in that order): transcript ID, gene ID, gene name, description. Adds these three fields to the homer file.
+#
+#Examples:
+# Makes a chart and an histogram summarizing annotations:
+#python getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -h 'MITF distances to nearest TSS' -p 'MITF Annotations'
+# Adds ENSEMBL gene IDs, gene names and descriptions:
+#python getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -b mart_export_hg19_release69.tsv
+# Retrieves lines corresponding to TSS:
+#python getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -r 'promoter-tss'
   
 import sys
 import getopt
 import pylab as P
 
-progHelp = "Allows operations on homer 'annotatePeaks.pl' output file.\nOptions:\n -h <histogram title>, makes a histogram of distances to nearest TSS.\n -p <piechart title>, makes a chart summarizing annotations (number of peaks annotated as 'promoter-TSS', 'exon, 'intron' ect...).\n -r <keyword>, retrieves lines annotated as the keyword (<promoter-tss>, <exon>, <intron>, <TTS>, <intergenic>, <non-coding>, <3'UTR>, <5'UTR>).\n -b <biomart_export.txt>, completes annotation with a biomart output file containing the following fields (in that order): transcript ID, gene ID, gene name, description. Adds these three fields to the homer file."
+progHelp = "Allows operations on homer 'annotatePeaks.pl' output file.\nRequires:\n -pylab module from package matplotlib (http://matplotlib.org/)\nArguments:\n -i <homer_annotation.txt>, homer output file.\nOptions:\n -h <histogram title>, makes a histogram of distances to nearest TSS.\n -p <piechart title>, makes a chart summarizing annotations (number of peaks annotated as 'promoter-TSS', 'exon, 'intron' ect...).\n -r <keyword>, retrieves lines annotated as the keyword (<promoter-tss>, <exon>, <intron>, <TTS>, <intergenic>, <non-coding>, <3'UTR>, <5'UTR>).\n -b <biomart_export.txt>, completes annotation with a biomart output file containing the following fields (in that order): transcript ID, gene ID, gene name, description. Adds these three fields to the homer file.\n\nExamples:\nMakes a chart and an histogram summarizing annotations:\npython getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -h 'MITF distances to nearest TSS' -p 'MITF Annotations'\nAdds ENSEMBL gene IDs, gene names and descriptions:\npython getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -b mart_export_hg19_release69.tsv\nRetrieves lines corresponding to TSS:\npython getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -r 'promoter-tss'"
 
 def get_params(argv):
     try:

@@ -31,6 +31,8 @@ Optional:
 
 ```
  Allows operations on homer 'annotatePeaks.pl' output file.
+ Requires:
+ -pylab module from package matplotlib (http://matplotlib.org/)
  Arguments:
  -i <homer_annotation.txt>, homer output file.
  Options:
@@ -38,6 +40,14 @@ Optional:
  -p <piechart title>, makes a chart summarizing annotations (number of peaks annotated as 'promoter-TSS', 'exon, 'intron' ect...).
  -r <keyword>, retrieves lines annotated as the keyword (<promoter-tss>, <exon>, <intron>, <TTS>, <intergenic>, <non-coding>, <3'UTR>, <5'UTR>)
  -b <biomart_export.txt>, completes annotation with a biomart output file containing the following fields (in that order): transcript ID, gene ID, gene name, description. Adds these three fields to the homer file.
+
+Examples:
+ Makes a chart and an histogram summarizing annotations:
+python getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -h 'MITF distances to nearest TSS' -p 'MITF Annotations'
+ Adds ENSEMBL gene IDs, gene names and descriptions:
+python getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -b mart_export_hg19_release69.tsv
+ Retrieves lines corresponding to TSS:
+python getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -r 'promoter-tss'
 ```
 
 ## editGTFlocations.py
