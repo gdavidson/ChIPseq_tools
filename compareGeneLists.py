@@ -5,20 +5,32 @@ Created on 11 mai 2015
 '''
 
 # Compares a gene list to a homer annotatePeaks.py output and finds common genes.
+# Requires:
+# -matplotlib: http://matplotlib.org/
+# -matplotlib-venn: https://pypi.python.org/pypi/matplotlib-venn
 # Arguments:
 #-i <genes.txt>, gene list with two tab separated fields per line (ENSEMBL Gene ID, gene common name).
 #-h <homerOut.tsv>, annotated file from homer with ensembl transcriptID as reference.
 #-e <biomartOut.tsv>, biomart output for your ensembl release and organism (two columns: geneID, transcriptID). If -g, first column has to be geneID then other fields are optional. 
 # Optional:
 #-b true, if your '-i' file is also a homer annotation file.
-#-g true, if your '-h' file is also a list with gene IDs in the first column.  
+#-g true, if your '-h' file is also a list with gene IDs in the first column.
+#
+#Examples:
+# Compares a gene list to a homer annotation file:
+#python compareGeneLists.py -i siSOX10_upreg_genes.txt -h chip_sox10_peaks_annotations.xls -e mart_export_hg19_release80.tsv
+# Compares two annotation files:
+#python compareGeneLists.py -i chip_sox10_peaks_annotations.xls -h chip_mitf_peaks_annotations.xls -e mart_export_hg19_release80.tsv -b true
+# Compares two gene lists:
+#python compareGeneLists.py -i siSOX10_upreg_genes.txt -h siMITF_upreg_genes.txt -e mart_export_hg19_release80.tsv -g true
+ 
 
 import sys
 import getopt
 import pylab as P
 from matplotlib_venn import venn2
 
-progHelp = "Compares a gene list to a homer annotatePeaks.py output and finds common genes.\nArguments:\n-i <genes.txt>, gene list with two tab separated fields per line (ENSEMBL Gene ID, gene common name).\n-h <homerOut.tsv>, annotated file from homer with ensembl transcriptID as reference.\n-e <biomartOut.tsv>, biomart output for your ensembl release and organism (two columns: geneID, transcriptID). If -g, first column has to be geneID then other fields are optional.\n Optional:\n-b true, if your '-i' file is also a homer annotation file.\n-g true, if your '-h' file is also a list with gene IDs in the first column."
+progHelp = "Compares a gene list to a homer annotatePeaks.py output and finds common genes.\nArguments:\n-i <genes.txt>, gene list with two tab separated fields per line (ENSEMBL Gene ID, gene common name).\n-h <homerOut.tsv>, annotated file from homer with ensembl transcriptID as reference.\n-e <biomartOut.tsv>, biomart output for your ensembl release and organism (two columns: geneID, transcriptID). If -g, first column has to be geneID then other fields are optional.\n Optional:\n-b true, if your '-i' file is also a homer annotation file.\n-g true, if your '-h' file is also a list with gene IDs in the first column.\n\nExamples:\nCompares a gene list to a homer annotation file:\npython compareGeneLists.py -i siSOX10_upreg_genes.txt -h chip_sox10_peaks_annotations.xls -e mart_export_hg19_release80.tsv\nCompares two annotation files:\npython compareGeneLists.py -i chip_sox10_peaks_annotations.xls -h chip_mitf_peaks_annotations.xls -e mart_export_hg19_release80.tsv -b true\nCompares two gene lists:\npython compareGeneLists.py -i siSOX10_upreg_genes.txt -h siMITF_upreg_genes.txt -e mart_export_hg19_release80.tsv -g true"
 
 def get_params(argv):
     try:
