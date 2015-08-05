@@ -22,7 +22,7 @@ Optional:
  Arguments:
  -i <file.fasta>, sequence(s) file in fasta format
  Options (choose one):
- -r <regexp>,  looks for the regular expression within input sequences.
+ -r <regexp>,  looks for a regular expression within input sequences.
  -u true, generates a new multi fasta file with new uniques IDs for each sequence.
  -f <ids.txt>, file containing a list of sequences IDs (1 per line) to retrieve from '-i' file.
  Optional:
@@ -33,7 +33,7 @@ Retrieves sequences from a list of IDs:
 python getFromFasta.py -i chip_mitf_peaks.fasta -f peak_ids.txt 
 Generates new IDs for each sequences:
 python getFromFasta.py -i unnamed_sequences.fasta -u true
-Looks for TATATA or TATATATA in the input sequences:
+Looks for TAAA or TAAAA in the input sequences:
 python getFromFasta.py -i chip_mitf_peaks.fasta -r 'TA{3,4}'
 ```
 

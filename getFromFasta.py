@@ -11,7 +11,7 @@ Created on 4 mai 2015
 # Arguments:
 # -i <file.fasta>, sequence(s) file in fasta format
 # Options (choose one):
-# -r <regexp>,  looks for the regular expression within input sequences.
+# -r <regexp>,  looks for a regular expression within input sequences.
 # -u true, generates a new multi fasta file with new uniques IDs for each sequence.
 # -f <ids.txt>, file containing a list of sequences IDs (1 per line) to retrieve from '-i' file.
 # Optional:
@@ -22,7 +22,7 @@ Created on 4 mai 2015
 #python getFromFasta.py -i chip_mitf_peaks.fasta -f peak_ids.txt 
 #Generates new IDs for each sequences:
 #python getFromFasta.py -i unnamed_sequences.fasta -u true
-#Looks for TATATA or TATATATA in the input sequences:
+#Looks for TAAA or TAAAA in the input sequences:
 #python getFromFasta.py -i chip_mitf_peaks.fasta -r 'TA{3,4}'
 
 import sys
@@ -32,7 +32,7 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 import re
 
-progHelp = "Allows different operations on fasta files.\nArguments:\n -i <file>, sequence(s) file in fasta format\nOptions (choose one):\n -r <regexp>,  looks for the input regular expression within input sequences.\n -u true, generates a new multi fasta file with new uniques IDs for each sequence.\n -f <ids.txt>, file containing a list of sequences IDs (1 per line) to retrieve from '-i' file.\nOptional:\n -p <separator>, only if '-f', parses the IDs of both files (ex: sequenceID(file.fasta): MITF_peak_201, ID(ids.txt): CT_HG19_MITF_peak_201, then use either 'MITF' or 'peak' as separator).\n\nExamples:\nRetrieves sequences from a list of IDs:\npython getFromFasta.py -i chip_mitf_peaks.fasta -f peak_ids.txt\nGenerates new IDs for each sequences:\npython getFromFasta.py -i unnamed_sequences.fasta -u true\nLooks for TATATA or TATATATA in the input sequences:\npython getFromFasta.py -i chip_mitf_peaks.fasta -r 'TA{3,4}'"
+progHelp = "Allows different operations on fasta files.\nArguments:\n -i <file>, sequence(s) file in fasta format\nOptions (choose one):\n -r <regexp>,  looks for a regular expression within input sequences.\n -u true, generates a new multi fasta file with new uniques IDs for each sequence.\n -f <ids.txt>, file containing a list of sequences IDs (1 per line) to retrieve from '-i' file.\nOptional:\n -p <separator>, only if '-f', parses the IDs of both files (ex: sequenceID(file.fasta): MITF_peak_201, ID(ids.txt): CT_HG19_MITF_peak_201, then use either 'MITF' or 'peak' as separator).\n\nExamples:\nRetrieves sequences from a list of IDs:\npython getFromFasta.py -i chip_mitf_peaks.fasta -f peak_ids.txt\nGenerates new IDs for each sequences:\npython getFromFasta.py -i unnamed_sequences.fasta -u true\nLooks for TAAA or TAAAA in the input sequences:\npython getFromFasta.py -i chip_mitf_peaks.fasta -r 'TA{3,4}'"
 
 def get_params(argv):
     try:
