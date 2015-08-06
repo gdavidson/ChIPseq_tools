@@ -100,6 +100,8 @@ python compareGeneLists.py -i siSOX10_upreg_genes.txt -h siMITF_upreg_genes.txt 
 
 ```
  Converts the ClinVar DB XML file to bed format
+Requires:
+-elementtree: http://effbot.org/zone/element-index.htm#installation
  Usage: python clinvarToBed_iterative.py -i ClinVarFullRelease_2015-04.xml
  Args:
 -i: input file, clinVar XML file
