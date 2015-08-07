@@ -175,4 +175,3 @@ if __name__ == '__main__':
     varList = getTableList(variantTupleList, motifWidth, idToNameMap, idToClinSinMap, homerMap, idToConditionMap, diseaseMap)
     writeTable(varList)
     print "Finished"
-    

@@ -43,7 +43,8 @@ def get_params(argv):
 def parsePeakNumber(peakID, expName):
     peakNum = peakID.split(expName+"_")[1]
     return peakNum
-     
+
+# returns hashmap: key = peak number, value = list of motif starts     
 def getMotifPeakLocationMap(memeFile, expName, fimo = False):
     mFile = open(memeFile, "r")
     memeMap = {}
@@ -63,7 +64,13 @@ def getMotifPeakLocationMap(memeFile, expName, fimo = False):
                 print "File from MEME, reading motif start in column 4."
                 printBool = False
         peakNum = str(parsePeakNumber(peakID, expName)).strip()
-        memeMap[peakNum]=motifStart
+        if not peakNum in memeMap:
+            memeMap[peakNum] = [motifStart]
+        else:
+            starts = memeMap[peakNum]
+            starts.append(motifStart)
+            memeMap[peakNum] = starts
+            
     print "Reading meme output '"+str(memeFile)+"': motif found in "+str(len(memeMap))+" sequences."
     return memeMap
 
@@ -85,12 +92,13 @@ def getMotifList(peakList, memeMap, expName, motifWidth):
     for line in peakList:
         peakID = str(line).split("\t")[3].strip()
         peakNum = str(parsePeakNumber(peakID, expName)).strip()
-        motifStart = memeMap[peakNum]
-        peakStart= str(line).split("\t")[1]
-        newStart = int(peakStart)+int(motifStart)
-        newEnd = int(newStart)+int(motifWidth)
-        newLine =  str(line).split("\t")[0]+"\t"+str(newStart)+"\t"+str(newEnd)+"\t"+peakID
-        motifList.append(newLine)
+        starts = memeMap[peakNum]
+        for motifStart in starts:
+            peakStart= str(line).split("\t")[1]
+            newStart = int(peakStart)+int(motifStart)
+            newEnd = int(newStart)+int(motifWidth)
+            newLine =  str(line).split("\t")[0]+"\t"+str(newStart)+"\t"+str(newEnd)+"\t"+peakID
+            motifList.append(newLine)
     return motifList
 
 def writeBed(bedList, outfileName):
@@ -109,5 +117,5 @@ if __name__ == '__main__':
     peakList = getPeaksWithMotif(peakFile, memeMap, expName)
     motifList = getMotifList(peakList, memeMap, expName, motifWidth)
     writeBed(motifList, expName+"_motif.bed")
-    print "Finished"
+    print "Finished."
      
