@@ -14,12 +14,14 @@
 import getopt
 import sys
 from elementtree.ElementTree import iterparse
- 
+
+usage = "Converts the ClinVar DB XML file to bed format\nUsage: python clinvarToBed_iterative.py -i ClinVarFullRelease_2015-04.xml\nArgs:\n-i: input file, clinVar XML file\nOutput:\n'clinvar.bed': clinVar DB in bed format"
+
 def get_params(argv):
     try:
         opts, args = getopt.getopt(argv, "i:", ["infile"])
     except getopt.GetoptError:
-        sys.exit("Converts the ClinVar DB XML file to bed format\nUsage: python clinvarToBed_iterative.py -i ClinVarFullRelease_2015-04.xml\nArgs:\n-i: input file, clinVar XML file\nOutput:\n'clinvar.bed': clinVar DB in bed format")
+        sys.exit(usage)
     infilename = "none"
     for opt,arg in opts:
         if opt =='-i':
@@ -66,5 +68,5 @@ def writeSequenceLocations(infileName):
 if __name__ == '__main__':
     infileName = get_params(sys.argv[1:])
     if infileName=="none":
-        sys.exit("Converts the ClinVar DB XML file to bed format\nUsage: python clinvarToBed_iterative.py -i ClinVarFullRelease_2015-04.xml\nArgs:\n-i: input file, clinVar XML file\nOutput:\n'clinvar.bed': clinVar DB in bed format")
+        sys.exit(usage)
     writeSequenceLocations(infileName)

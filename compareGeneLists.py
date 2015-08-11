@@ -52,8 +52,7 @@ def get_params(argv):
         if opt == '-b':
             bothHomer = True
         if opt == '-g':
-            bothLists = True
-        
+            bothLists = True        
     return infilename, homerFile, ensemblFile, bothHomer, bothLists
 
 def getHomerDictionary(homerFile, ensemblTransToGeneMap):
