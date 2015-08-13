@@ -160,6 +160,8 @@ def getGeneMap(infilename, ensemblTransToGeneMap):
     geneMap = {}
     hFile = open(infilename, "r")
     for line in hFile:
+        if str(line).isspace():
+            continue
         transID = str(line).split("\t")[10].upper().strip()
         if transID in ensemblTransToGeneMap:
             geneID = ensemblTransToGeneMap[transID]
@@ -173,6 +175,8 @@ def getEnsemblMap(ensemblFile):
     eFile = open(ensemblFile,"r")
     geneMap = {}
     for line in eFile:
+        if str(line).isspace():
+            continue
         geneID = str(line).split("\t")[0].upper().strip()
         geneMap[geneID] = line
     eFile.flush()
@@ -184,6 +188,8 @@ def getIDList(fileName):
     iFile = open(fileName, "r")
     idList = []
     for line in iFile:
+        if str(line).isspace():
+            continue
         geneID = str(line).split("\t")[0].upper().strip()
         idList.append(geneID)
     iFile.flush()
@@ -214,7 +220,6 @@ def compareLists(list1, list2):
 
 def writeLines(inList, outName, lineMap):
     oFile = open(outName, "w")
-    print "Writing '"+outName+"': "+str(len(inList))+" lines."
     for geneID in inList:
         if geneID in lineMap:
             line = str(lineMap[geneID]).strip()
@@ -224,7 +229,8 @@ def writeLines(inList, outName, lineMap):
         oFile.write(line+"\n")
     oFile.flush()
     oFile.close()
-    
+    print "Writing '"+outName+"': "+str(len(inList))+" lines."
+ 
 def drawVennDiagram(list1, list2):
     print "Displaying Venn Diagram ..."
     venn2([set(list1), set(list2)], ('list1', 'list2'))
