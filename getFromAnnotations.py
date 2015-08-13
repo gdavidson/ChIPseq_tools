@@ -14,6 +14,7 @@ Created on 5 juin 2015
 # -p <piechart title>, makes a chart summarizing annotations (number of peaks annotated as 'promoter-TSS', 'exon, 'intron' ect...).
 # -r <keyword>, retrieves lines annotated as the keyword (<promoter-tss>, <exon>, <intron>, <TTS>, <intergenic>, <non-coding>, <3'UTR>, <5'UTR>)
 # -b <biomart_export.txt>, completes annotation with a biomart output file containing the following fields (in that order): transcript ID, gene ID, gene name, description. Adds these three fields to the homer file.
+# -l <peaks.txt>, retrieves lines corresponding to a list of peaks.
 #
 #Examples:
 # Makes a chart and a histogram summarizing annotations:
@@ -22,16 +23,18 @@ Created on 5 juin 2015
 #python getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -b mart_export_hg19_release69.tsv
 # Retrieves lines corresponding to TSS:
 #python getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -r 'promoter-tss'
+# Retrieves lines corresponding to a list of peaks:
+#python getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -l mitf_sox_commonpeaks.txt
   
 import sys
 import getopt
 import pylab as P
 
-progHelp = "Allows operations on homer 'annotatePeaks.pl' output file.\nRequires:\n -pylab module from package matplotlib (http://matplotlib.org/)\nArguments:\n -i <homer_annotation.txt>, homer output file.\nOptions:\n -h <histogram title>, makes a histogram of distances to nearest TSS.\n -p <piechart title>, makes a chart summarizing annotations (number of peaks annotated as 'promoter-TSS', 'exon, 'intron' ect...).\n -r <keyword>, retrieves lines annotated as the keyword (<promoter-tss>, <exon>, <intron>, <TTS>, <intergenic>, <non-coding>, <3'UTR>, <5'UTR>).\n -b <biomart_export.txt>, completes annotation with a biomart output file containing the following fields (in that order): transcript ID, gene ID, gene name, description. Adds these three fields to the homer file.\n\nExamples:\nMakes a chart and a histogram summarizing annotations:\npython getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -h 'MITF distances to nearest TSS' -p 'MITF Annotations'\nAdds ENSEMBL gene IDs, gene names and descriptions:\npython getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -b mart_export_hg19_release69.tsv\nRetrieves lines corresponding to TSS:\npython getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -r 'promoter-tss'"
+progHelp = "Allows operations on homer 'annotatePeaks.pl' output file.\nRequires:\n -pylab module from package matplotlib (http://matplotlib.org/)\nArguments:\n -i <homer_annotation.txt>, homer output file.\nOptions:\n -h <histogram title>, makes a histogram of distances to nearest TSS.\n -p <piechart title>, makes a chart summarizing annotations (number of peaks annotated as 'promoter-TSS', 'exon, 'intron' ect...).\n -r <keyword>, retrieves lines annotated as the keyword (<promoter-tss>, <exon>, <intron>, <TTS>, <intergenic>, <non-coding>, <3'UTR>, <5'UTR>).\n -b <biomart_export.txt>, completes annotation with a biomart output file containing the following fields (in that order): transcript ID, gene ID, gene name, description. Adds these three fields to the homer file.\n-l <peaks.txt>, retrieves lines corresponding to a list of peaks.\n\nExamples:\nMakes a chart and a histogram summarizing annotations:\npython getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -h 'MITF distances to nearest TSS' -p 'MITF Annotations'\nAdds ENSEMBL gene IDs, gene names and descriptions:\npython getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -b mart_export_hg19_release69.tsv\nRetrieves lines corresponding to TSS:\npython getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -r 'promoter-tss'\nRetrieves lines corresponding to a list of peaks:\npython getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -l mitf_sox_commonpeaks.txt"
 
 def get_params(argv):
     try:
-        opts, args  = getopt.getopt(argv, "i:h:p:r:b:", ["infile"])
+        opts, args  = getopt.getopt(argv, "i:h:p:r:b:l:", ["infile"])
     except getopt.GetoptError:
         sys.exit("Invalid argument:\n"+progHelp)
     infilename = "none"
@@ -43,6 +46,7 @@ def get_params(argv):
     typeToRetrieve = "none"
     biomartFile = "none"
     completeFile = False
+    peakListFile = "none"
     for opt,arg in opts:
         if opt =='-i':
             infilename = arg
@@ -63,8 +67,13 @@ def get_params(argv):
             biomartFile = arg
             completeFile = True
             if queryType == "none":
-                queryType = "biomart"                
-    return infilename, queryType, plotDist, plotLoc, chartTitle, histTitle, typeToRetrieve, biomartFile, completeFile
+                queryType = "biomart" 
+        if opt == "-l":
+            peakListFile = arg
+            if queryType == "none":
+                queryType = "peakList"
+                           
+    return infilename, queryType, plotDist, plotLoc, chartTitle, histTitle, typeToRetrieve, biomartFile, completeFile, peakListFile
 
 def getAnnotationList(annotationFile):
     aFile = open(annotationFile, "r")
@@ -152,6 +161,14 @@ def getLinesFromType(annotationList, typeToRetrieve):
     print "Looking for lines with annotation '"+typeToRetrieve+"': "+str(len(rLines))+" lines found."
     return rLines
 
+def getLinesFromPeaks(annotationList, peakList):
+    rLines = []
+    for ann in annotationList:
+        peakID = str(ann).split("\t")[0].upper().strip()
+        if peakID in peakList:
+            rLines.append(ann)
+    return rLines
+
 def getEnsemblMap(biomartFile):
     bFile = open(biomartFile, "r")
     ensemblMap = {}
@@ -201,9 +218,23 @@ def completeAnnotations(annotationList, ensemblMap):
         newline = newline+"\t"+addedAnnotations+"\n"
         detailedLines.append(newline)
     return detailedLines
+
+def getIDList(fileName):
+    iFile = open(fileName, "r")
+    idList = []
+    for line in iFile:
+        if str(line).isspace():
+            continue
+        peakID = str(line).split("\t")[0].upper().strip()
+        idList.append(peakID)
+    iFile.flush()
+    iFile.close()
+    print "Reading peak list '"+str(fileName)+"': "+str(len(idList))+" IDs."
+    return idList
+
              
 if __name__ == '__main__':
-    infilename, queryType, plotDist, plotLoc, chartTitle, histTitle, typeToRetrieve, biomartFile, completeFile = get_params(sys.argv[1:])
+    infilename, queryType, plotDist, plotLoc, chartTitle, histTitle, typeToRetrieve, biomartFile, completeFile, peakListFile = get_params(sys.argv[1:])
     if infilename == "none" or queryType == "none":
         sys.exit(progHelp)
     annotationList = getAnnotationList(infilename)
@@ -220,4 +251,8 @@ if __name__ == '__main__':
         ensemblMap = getEnsemblMap(biomartFile)
         detailedLines = completeAnnotations(annotationList, ensemblMap)
         writeList(detailedLines, str(infilename).split(".")[0]+"_detailed.xls")
+    if not peakListFile == "none":
+        peakList = getIDList(peakListFile)
+        retLines = getLinesFromPeaks(annotationList, peakList)
+        writeList(retLines, "foundLines.txt")
     print "Finished."

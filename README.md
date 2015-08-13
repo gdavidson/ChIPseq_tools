@@ -50,6 +50,7 @@ python getFromFasta.py -i chip_mitf_peaks.fasta -r 'TA{3,4}'
  -p <piechart title>, makes a chart summarizing annotations (number of peaks annotated as 'promoter-TSS', 'exon, 'intron' ect...).
  -r <keyword>, retrieves lines annotated as the keyword (<promoter-tss>, <exon>, <intron>, <TTS>, <intergenic>, <non-coding>, <3'UTR>, <5'UTR>)
  -b <biomart_export.txt>, completes annotation with a biomart output file containing the following fields (in that order): transcript ID, gene ID, gene name, description. Adds these three fields to the homer file.
+ -l <peaks.txt>, retrieves lines corresponding to a list of peaks.
 
 Examples:
  Makes a chart and a histogram summarizing annotations:
@@ -58,6 +59,8 @@ python getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -h 'MITF distanc
 python getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -b mart_export_hg19_release69.tsv
  Retrieves lines corresponding to TSS:
 python getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -r 'promoter-tss'
+ Retrieves lines corresponding to a list of peaks:
+python getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -l mitf_sox_commonpeaks.txt
 ```
 
 ## editGTFlocations.py
