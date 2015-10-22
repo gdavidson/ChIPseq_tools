@@ -29,6 +29,7 @@ Created on 5 juin 2015
 import sys
 import getopt
 import pylab as P
+import matplotlib.pyplot as plt
 
 progHelp = "Allows operations on homer 'annotatePeaks.pl' output file.\nRequires:\n -pylab module from package matplotlib (http://matplotlib.org/)\nArguments:\n -i <homer_annotation.txt>, homer output file.\nOptions:\n -h <histogram title>, makes a histogram of distances to nearest TSS.\n -p <piechart title>, makes a chart summarizing annotations (number of peaks annotated as 'promoter-TSS', 'exon, 'intron' ect...).\n -r <keyword>, retrieves lines annotated as the keyword (<promoter-tss>, <exon>, <intron>, <TTS>, <intergenic>, <non-coding>, <3'UTR>, <5'UTR>).\n -b <biomart_export.txt>, completes annotation with a biomart output file containing the following fields (in that order): transcript ID, gene ID, gene name, description. Adds these three fields to the homer file.\n-l <peaks.txt>, retrieves lines corresponding to a list of peaks.\n\nExamples:\nMakes a chart and a histogram summarizing annotations:\npython getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -h 'MITF distances to nearest TSS' -p 'MITF Annotations'\nAdds ENSEMBL gene IDs, gene names and descriptions:\npython getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -b mart_export_hg19_release69.tsv\nRetrieves lines corresponding to TSS:\npython getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -r 'promoter-tss'\nRetrieves lines corresponding to a list of peaks:\npython getFromAnnotations.py -i chip_mitf_peaks_annotations.xls -l mitf_sox_commonpeaks.txt"
 
@@ -87,12 +88,17 @@ def getAnnotationList(annotationFile):
 
 def getDistanceList(annotationList):
     distances = []
+    countMap = {}
     for annotation in annotationList:
         if str(annotation).startswith("Peak"):
             continue
         distance = int(annotation.split("\t")[9])
         distances.append(distance)
-    return distances
+        if distance in countMap:
+            countMap[distance]=countMap[distance]+1
+        else:
+            countMap[distance] = 1
+    return distances, countMap
 
 def histDistances(distanceList, hisTitle):
     print "Displaying histogram 'distances from nearest TSS' ..."
@@ -154,6 +160,7 @@ def pieChart(pieChartMap, chartTitle):
 
 def getLinesFromType(annotationList, typeToRetrieve):
     rLines = []
+    rLines.append(annotationList[0])
     for ann in annotationList:
         location = str(str(ann).split("\t")[7]).lower().strip()
         if location.startswith(typeToRetrieve):
@@ -232,21 +239,37 @@ def getIDList(fileName):
     print "Reading peak list '"+str(fileName)+"': "+str(len(idList))+" IDs."
     return idList
 
-             
+def plotDistances(countMap):
+    distances = []
+    distCount = []
+    keys = range(-250,250,1)
+    for key in keys:
+        if key in countMap:
+            distances.append(key)
+            distCount.append(countMap[key])
+    print "Displaying TSS plot at base pair resolution..."
+    plt.plot(distances,distCount, 'ro-')
+    plt.xticks(range(-250,250,20))
+    plt.grid(True)
+    plt.xlabel("Distance to TSS (pb)")
+    plt.ylabel("Peak Count")
+    plt.show()
+                 
 if __name__ == '__main__':
     infilename, queryType, plotDist, plotLoc, chartTitle, histTitle, typeToRetrieve, biomartFile, completeFile, peakListFile = get_params(sys.argv[1:])
     if infilename == "none" or queryType == "none":
         sys.exit(progHelp)
     annotationList = getAnnotationList(infilename)
     if plotDist == True:
-        distanceList = getDistanceList(annotationList)
+        distanceList,countMap = getDistanceList(annotationList)
         histDistances(distanceList, histTitle)
+        plotDistances(countMap)
     if plotLoc == True:
         pieChartMap = getPieChartMap(annotationList)
         pieChart(pieChartMap, chartTitle)
     if queryType == "retrieveLines":
         retLines = getLinesFromType(annotationList, typeToRetrieve)
-        writeList(retLines, "retrievedAnnotations_"+typeToRetrieve+".txt")
+        writeList(retLines, "retrievedAnnotations_"+typeToRetrieve+".xls")
     if completeFile == True:
         ensemblMap = getEnsemblMap(biomartFile)
         detailedLines = completeAnnotations(annotationList, ensemblMap)

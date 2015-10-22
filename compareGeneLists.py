@@ -191,7 +191,10 @@ def getIDList(fileName):
         if str(line).isspace():
             continue
         geneID = str(line).split("\t")[0].upper().strip()
-        idList.append(geneID)
+        if not geneID in idList:
+            idList.append(geneID)
+        else:
+            continue
     iFile.flush()
     iFile.close()
     print "Reading gene list '"+str(fileName)+"': "+str(len(idList))+" IDs."
