@@ -88,6 +88,7 @@ Optional:
  Optional:
 -b true, if your '-i' file is also a homer annotation file.
 -g true, if your '-h' file is also a list with gene IDs in the first column.
+-q <N (INTEGER)>, only with '-g', divides the '-i' gene list into N sublists and compares them to the '-h' gene list.
 
 Examples:
  Compares a gene list to a homer annotation file:

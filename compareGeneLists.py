@@ -15,6 +15,7 @@ Created on 11 mai 2015
 # Optional:
 #-b true, if your '-i' file is also a homer annotation file.
 #-g true, if your '-h' file is also a list with gene IDs in the first column.
+#-q <N (INTEGER)>, only with '-g', divides the '-i' gene list into N sublists and compares them to the '-h' gene list.
 #
 #Examples:
 # Compares a gene list to a homer annotation file:
@@ -29,12 +30,13 @@ import sys
 import getopt
 import pylab as P
 from matplotlib_venn import venn2
+import math
 
-progHelp = "Compares a gene list to a homer annotatePeaks.py output and finds common genes.\nArguments:\n-i <genes.txt>, gene list with two tab separated fields per line (ENSEMBL Gene ID, gene common name).\n-h <homerOut.tsv>, annotated file from homer with ensembl transcriptID as reference.\n-e <biomartOut.tsv>, biomart output for your ensembl release and organism (two columns: geneID, transcriptID). If -g, first column has to be geneID then other fields are optional.\n Optional:\n-b true, if your '-i' file is also a homer annotation file.\n-g true, if your '-h' file is also a list with gene IDs in the first column.\n\nExamples:\nCompares a gene list to a homer annotation file:\npython compareGeneLists.py -i siSOX10_upreg_genes.txt -h chip_sox10_peaks_annotations.xls -e mart_export_hg19_release80.tsv\nCompares two annotation files:\npython compareGeneLists.py -i chip_sox10_peaks_annotations.xls -h chip_mitf_peaks_annotations.xls -e mart_export_hg19_release80.tsv -b true\nCompares two gene lists:\npython compareGeneLists.py -i siSOX10_upreg_genes.txt -h siMITF_upreg_genes.txt -e mart_export_hg19_release80.tsv -g true"
+progHelp = "Compares a gene list to a homer annotatePeaks.py output and finds common genes.\nArguments:\n-i <genes.txt>, gene list with two tab separated fields per line (ENSEMBL Gene ID, gene common name).\n-h <homerOut.tsv>, annotated file from homer with ensembl transcriptID as reference.\n-e <biomartOut.tsv>, biomart output for your ensembl release and organism (two columns: geneID, transcriptID). If -g, first column has to be geneID then other fields are optional.\n Optional:\n-b true, if your '-i' file is also a homer annotation file.\n-g true, if your '-h' file is also a list with gene IDs in the first column.\n-q <N (INTEGER)>, only with '-g', divides the '-i' gene list into N sublists and compares them to the '-h' gene list.\n\nExamples:\nCompares a gene list to a homer annotation file:\npython compareGeneLists.py -i siSOX10_upreg_genes.txt -h chip_sox10_peaks_annotations.xls -e mart_export_hg19_release80.tsv\nCompares two annotation files:\npython compareGeneLists.py -i chip_sox10_peaks_annotations.xls -h chip_mitf_peaks_annotations.xls -e mart_export_hg19_release80.tsv -b true\nCompares two gene lists:\npython compareGeneLists.py -i siSOX10_upreg_genes.txt -h siMITF_upreg_genes.txt -e mart_export_hg19_release80.tsv -g true"
 
 def get_params(argv):
     try:
-        opts, args = getopt.getopt(argv, "i:h:e:b:g:", ["infilename", "homerFile", "ensemblFile", "bothHomer"])
+        opts, args = getopt.getopt(argv, "i:h:e:b:g:q:", ["infilename", "homerFile", "ensemblFile", "bothHomer"])
     except getopt.GetoptError:
         sys.exit("Invalid argument:\n"+progHelp)
     infilename = "none"
@@ -42,6 +44,7 @@ def get_params(argv):
     ensemblFile = "none"
     bothHomer = False
     bothLists = False
+    quantiles = "none"
     for opt,arg in opts:
         if opt =='-i':
             infilename = arg
@@ -52,8 +55,10 @@ def get_params(argv):
         if opt == '-b':
             bothHomer = True
         if opt == '-g':
-            bothLists = True        
-    return infilename, homerFile, ensemblFile, bothHomer, bothLists
+            bothLists = True
+        if opt == '-q':
+            quantiles = int(arg)     
+    return infilename, homerFile, ensemblFile, bothHomer, bothLists, quantiles
 
 def getHomerDictionary(homerFile, ensemblTransToGeneMap):
     homerDic = {}
@@ -216,7 +221,7 @@ def compareLists(list1, list2):
         else:
             uniqueGenesL2.append(geneID)
     print "Comparing lists ..."
-    print str(len(commonGenes))+" genes in common."
+    print str(len(commonGenes))+" genes in common. ("+str(int((float(len(commonGenes))/len(list1))*100))+"% of list1, "+str(int((float(len(commonGenes))/len(list2))*100))+"% of list2)."
     print str(len(uniqueGenesL1))+" genes unique to the first list"
     print str(len(uniqueGenesL2))+" genes unique to the second list"
     return commonGenes, uniqueGenesL1, uniqueGenesL2        
@@ -238,9 +243,19 @@ def drawVennDiagram(list1, list2):
     print "Displaying Venn Diagram ..."
     venn2([set(list1), set(list2)], ('list1', 'list2'))
     P.show()
-                              
+    
+def divideIntoSublists(inputList, subListNumber):
+    incr = int(math.ceil(float(len(inputList))/subListNumber))
+    sublists = []
+    for x in xrange(0, len(inputList), incr):
+        if x+incr < len(inputList):
+            sublists.append(inputList[x:x+incr])
+        else:
+            sublists.append(inputList[x:len(inputList)])
+    return sublists
+                                  
 if __name__ == '__main__':
-    infilename, homerFile, ensemblFile, bothHomer, bothLists = get_params(sys.argv[1:])
+    infilename, homerFile, ensemblFile, bothHomer, bothLists, quantiles = get_params(sys.argv[1:])
     if infilename == "none" or homerFile == "none" or ensemblFile == "none":
         sys.exit(progHelp)
     if bothHomer == False and bothLists == False:   
@@ -266,4 +281,12 @@ if __name__ == '__main__':
         writeLines(uniqueL1, infilename.split(".")[0]+"_unique.txt", ensemblMap)
         writeLines(uniqueL2, homerFile.split(".")[0]+"_unique.txt", ensemblMap)
         drawVennDiagram(list1, list2)
+        if not quantiles == "none":
+            print "Dividing '"+infilename+"' into "+str(quantiles)+" quantiles."
+            sublists = divideIntoSublists(list1, quantiles)
+            index = 1
+            for sublist in sublists:
+                print "Quantile Number "+str(index)+":"
+                index = index+1
+                compareLists(sublist, list2)
     print "Finished."      
