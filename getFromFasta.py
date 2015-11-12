@@ -131,9 +131,10 @@ def getRecordListFromIDs(recordList, idList, parseIDs = False, expName = "peak")
                 id1 = parsePeakNumber(record.id, expName)
                 id2 = parsePeakNumber(seqID, expName)
             else:
-                id1 = record.id
-                id2 = seqID
+                id1 = str(record.id).strip()
+                id2 = str(seqID).strip()
             if id1 == id2:
+                print id1,id2
                 records.append(record)
     print "Found "+str(len(records))+" sequences matching IDs."
     return records
