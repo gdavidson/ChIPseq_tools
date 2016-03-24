@@ -210,16 +210,17 @@ def compareLists(list1, list2):
     uniqueGenesL1 = []
     uniqueGenesL2 = []
     for geneID in list1:
-        if geneID in list2:
+        if geneID in list2 and not geneID in commonGenes:
             commonGenes.append(geneID)
         else:
-            uniqueGenesL1.append(geneID)
-            
+            if not geneID in uniqueGenesL1:
+                uniqueGenesL1.append(geneID)         
     for geneID in list2:
         if geneID in list1:
             continue
         else:
-            uniqueGenesL2.append(geneID)
+            if not geneID in uniqueGenesL2:
+                uniqueGenesL2.append(geneID)
     print "Comparing lists ..."
     print str(len(commonGenes))+" genes in common. ("+str(int((float(len(commonGenes))/len(list1))*100))+"% of list1, "+str(int((float(len(commonGenes))/len(list2))*100))+"% of list2)."
     print str(len(uniqueGenesL1))+" genes unique to the first list"
