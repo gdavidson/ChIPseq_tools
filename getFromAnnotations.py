@@ -102,13 +102,15 @@ def getDistanceList(annotationList):
 
 def histDistances(distanceList, hisTitle):
     print "Displaying histogram 'distances from nearest TSS' ..."
-    dbin = [-50000,-40000, -30000,-20000,-10000, 0, 10000, 20000, 30000, 40000, 50000]
-    P.hist(distanceList, bins=dbin, color = 'blue')
+    dbin = range(-30000,30001,1000)
+    P.hist(distanceList, bins=dbin, color = ['blue'])
     P.xlabel('Distance to TSS (pb)')
     P.ylabel('Count')
-    P.xticks(dbin)
+    P.xticks(range(-30000,30001,10000))
     P.title(hisTitle, bbox={'facecolor':'0.8', 'pad':5})
     P.show()
+
+    
     
 def getPieChartMap(annotationList):
     countMap = {"3'UTR": 0, "5'UTR": 0, "Exon":0, "Intergenic": 0, "Intron": 0, "promoter-TSS": 0, "TTS": 0, "non-coding": 0}
