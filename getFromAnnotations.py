@@ -210,11 +210,13 @@ def fillLine(line, featureNumber):
 
 def completeAnnotations(annotationList, ensemblMap):
     detailedLines = []
+    firstLine = True
     for line in annotationList:
-        if line.startswith("Peak"):
+        if firstLine == True:
             firstline = str(line).strip()+"\tGene ID\tGene Name\tGene Description\n"
             detailedLines.append(firstline)
             featureNumber = len(line.split("\t"))
+            firstLine = False
             continue
         transID = str(line).split("\t")[10].upper().strip()
         addedAnnotations = "NA"
@@ -234,7 +236,7 @@ def getIDList(fileName):
     for line in iFile:
         if str(line).isspace():
             continue
-        peakID = str(line).split("\t")[0].upper().strip()
+        peakID = str(line).split("\t")[3].upper().strip()
         idList.append(peakID)
     iFile.flush()
     iFile.close()
